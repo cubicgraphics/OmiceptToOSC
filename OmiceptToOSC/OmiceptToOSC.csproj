@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="lib-client-csharp">
+      <HintPath>C:\Program Files\\HP\HP Omnicept SDK\1.14.0\bin\Release\csharp\lib-client-csharp.dll</HintPath>
+    </Reference>
+    <Reference Include="AsyncIO">
+      <HintPath>C:\Program Files\\HP\HP Omnicept SDK\1.14.0\bin\Release\csharp\AsyncIO.dll</HintPath>
+    </Reference>
+    <Reference Include="Google.Protobuf">
+      <HintPath>C:\Program Files\\HP\HP Omnicept SDK\1.14.0\bin\Release\csharp\Google.Protobuf.dll</HintPath>
+    </Reference>
+    <Reference Include="NetMQ">
+      <HintPath>C:\Program Files\\HP\HP Omnicept SDK\1.14.0\bin\Release\csharp\NetMQ.dll</HintPath>
+    </Reference>
+    <Reference Include="SemanticVersioning">
+      <HintPath>C:\Program Files\\HP\HP Omnicept SDK\1.14.0\bin\Release\csharp\SemanticVersioning.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,49 @@
+﻿<Window x:Class="OmiceptToOSC.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:OmiceptToOSC"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="421" Width="791" MinWidth="300" MinHeight="260">
+    <Grid>
+        <Button x:Name="StartCollectingFromOmnicept" Content="Start collecting from Omnicept" Margin="0,0,10,10" HorizontalAlignment="Right" Width="200" Height="48" VerticalAlignment="Bottom" Click="StartCollectingFromOmnicept_Click"/>
+        <GroupBox x:Name="EnableGroupBox" Header="Enable" Margin="10,10,0,0" Height="171" VerticalAlignment="Top" HorizontalAlignment="Left" Width="144">
+            <Grid Height="144">
+                <CheckBox x:Name="HeartRateVariabilityCheckBox" Content="Heart Rate Variability" HorizontalAlignment="Left" Margin="0,20,0,0" VerticalAlignment="Top"/>
+                <CheckBox x:Name="CognitiveLoadCheckBox" Content="Cognitive load" HorizontalAlignment="Left" Margin="0,40,0,0" VerticalAlignment="Top"/>
+                <CheckBox x:Name="HeartRateCheckBox" HorizontalAlignment="Left" VerticalAlignment="Top" Content="Heart Rate"/>
+            </Grid>
+        </GroupBox>
+        <GroupBox x:Name="OscBox" Header="OSC" Margin="10,0,0,10" HorizontalAlignment="Left" Width="221" Height="81" VerticalAlignment="Bottom">
+            <Grid Height="58" HorizontalAlignment="Left" Width="212">
+                <TextBox x:Name="OSC_out_port_TextBox" Margin="85,3,0,0" TextWrapping="Wrap" HorizontalAlignment="Left" Width="121" Height="18" VerticalAlignment="Top" Cursor="IBeam" Text="9000"/>
+                <Button x:Name="StartOscButton" Content="Start sending OSC" Margin="4,25,0,0" Height="30" VerticalAlignment="Top" HorizontalAlignment="Left" Width="202"/>
+                <Label x:Name="OSCOutPortLabel" Content="OSC out port" FontSize="11" Margin="4,-2,0,0" RenderTransformOrigin="0.5,0.5" HorizontalAlignment="Left" Width="82" Height="27" VerticalAlignment="Top">
+                    <Label.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform/>
+                            <SkewTransform/>
+                            <RotateTransform/>
+                            <TranslateTransform/>
+                        </TransformGroup>
+                    </Label.RenderTransform>
+                </Label>
+            </Grid>
+        </GroupBox>
+        <ListBox x:Name="listBox" Margin="159,6,9,0" IsSynchronizedWithCurrentItem="False" BorderThickness="0,0,0,0" Height="317" VerticalAlignment="Top" >
+            <GroupBox x:Name="HeartRateBox" Header="Heart Rate" Width="600" Height="100">
+                <Grid>
+                    <Label x:Name="HeartRateLabel" Content="Idk" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+                </Grid>
+            </GroupBox>
+            <GroupBox x:Name="HeartRateVariabilityBox" Header="Heart Rate Variability" Width="600" Height="100">
+                <Grid/>
+            </GroupBox>
+            <GroupBox x:Name="CognitiveLoadBox" Header="Cognitive Load" Width="600" Height="100">
+                <Grid/>
+            </GroupBox>
+        </ListBox>
+
+    </Grid>
+</Window>
