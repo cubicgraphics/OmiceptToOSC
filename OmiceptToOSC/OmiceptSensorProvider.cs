@@ -19,7 +19,10 @@ namespace OmiceptToOSC
         public bool IsConnected => isConnected;
 
 
-        private readonly uint[] Messages = {
+        //TODO - alter the subscribed data when something is enabled/disabled so we are not reciving more than needed
+        //TODO - make the initialise funtion not yeet my pc into freeze land for 5 min (pop some awaits in there)
+
+/*        private readonly uint[] Messages = {
             MessageTypes.ABI_MESSAGE_HEART_RATE,
             MessageTypes.ABI_MESSAGE_HEART_RATE_VARIABILITY,
             MessageTypes.ABI_MESSAGE_EYE_TRACKING,
@@ -39,17 +42,13 @@ namespace OmiceptToOSC
             MessageTypes.ABI_MESSAGE_AUDIO,
             MessageTypes.ABI_MESSAGE_AUDIO_FRAME,
             MessageTypes.ABI_MESSAGE_SUBSCRIPTION_RESULT_LIST
-        };
+        };*/
 
-        public readonly SensorType[] UseableMessages =
-        {
-            new HeartRateOsc(MessageTypes.ABI_MESSAGE_HEART_RATE, "Heart rate", "OSC thing"),
-            new HeartRateVariabilityOsc(MessageTypes.ABI_MESSAGE_HEART_RATE_VARIABILITY, "Heart rate variability", "OSC thing1", "OSC thing1"),
-            new CognitiveLoadOsc(MessageTypes.ABI_MESSAGE_COGNITIVE_LOAD, "Cognitive load", "OSC thing1", "OSC thing2"),
-        };
+        public readonly SensorType[] UseableMessages;
 
-        public OmniceptSensorProvider()
+        public OmniceptSensorProvider(SensorType[] SensorTypes)
         {
+            UseableMessages = SensorTypes;
             IsRunningCollector = new();
         }
         public async void Initialise()
@@ -64,10 +63,46 @@ namespace OmiceptToOSC
             {
                 foreach(var sensorMessage in UseableMessages)
                 {
-                    FetchData(sensorMessage); //Runs the collectors on the same thread
+                    sensorMessage.HasBeenEnabled += StartStopFetcher;
+                    StartStopFetcher(sensorMessage);
                 }
             }
             Debug.WriteLine("Initialised");
+        }
+        private void StartStopFetcher(SensorType sensorToStart) //Will start or stop a fetcher when its IsEnabled bool is changed
+        {
+            if (sensorToStart.IsEnabled)
+            {
+                sensorToStart.IsRunning ??= new();
+                if (sensorToStart.IsRunning.IsCancellationRequested)
+                {
+                    sensorToStart.IsRunning.Dispose();
+                    sensorToStart.IsRunning = new();
+                }
+                else
+                {
+                    sensorToStart.IsRunning.Cancel();
+                    sensorToStart.IsRunning.Dispose();
+                    sensorToStart.IsRunning = new();
+                }
+                CancellationTokenSource IsCollectorRunning = CancellationTokenSource.CreateLinkedTokenSource(IsRunningCollector.Token, sensorToStart.IsRunning.Token);
+                FetchData(sensorToStart, IsCollectorRunning); //Runs the collectors on the same thread
+            }
+            else
+            {
+                if(sensorToStart.IsRunning != null)
+                {
+                    if (sensorToStart.IsRunning.IsCancellationRequested)
+                    {
+                        sensorToStart.IsRunning.Dispose();
+                    }
+                    else
+                    {
+                        sensorToStart.IsRunning.Cancel();
+                        sensorToStart.IsRunning.Dispose();
+                    }
+                }
+            }
         }
         public void Teardown()
         {
@@ -76,6 +111,10 @@ namespace OmiceptToOSC
                 IsRunningCollector.Cancel();
             }
             IsRunningCollector.Dispose();
+            foreach (var sensorMessage in UseableMessages)
+            {
+                sensorMessage.HasBeenEnabled -= StartStopFetcher;
+            }
             StopGlia();
             Debug.WriteLine("Teardown complete");
             return;
@@ -135,20 +174,21 @@ namespace OmiceptToOSC
         }
 
 
-        async void FetchData(SensorType sensorInput)
+        async void FetchData(SensorType sensorInput, CancellationTokenSource IsRunning)
         {
             Debug.WriteLine("Message collect loop started for " + sensorInput.SensorName);
-            while (!IsRunningCollector!.IsCancellationRequested)
+            while (!IsRunning.IsCancellationRequested && sensorInput.IsEnabled)
             {
                 sensorInput.FetchData(ref gliaLastValueCacheCustom);
                 sensorInput.LastUpdate = DateTime.UtcNow.Ticks / TimeSpan.TicksPerMillisecond;
                 try
                 {
-                    await Task.Delay(sensorInput.UpdateInterval, IsRunningCollector.Token);
+                    await Task.Delay(sensorInput.UpdateInterval, IsRunning.Token);
                 }
                 catch (TaskCanceledException) { Debug.WriteLine("Message collect loop ended for " + sensorInput.SensorName); return;/* module.LogDebug("Omnicept Heart rate data fetching loop await task ended");*/ }
                 catch (ObjectDisposedException) { Debug.WriteLine("Message collect loop ended for " + sensorInput.SensorName); return;/* module.LogDebug("Omnicept Heart rate Fetch data loop await task ended unexpectedly"); */}
             }
+            IsRunning.Dispose();
             Debug.WriteLine("Message collect loop ended for " + sensorInput.SensorName);
         }
     }
